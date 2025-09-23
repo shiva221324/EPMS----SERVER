@@ -7,6 +7,8 @@ import org.springframework.stereotype.Service;
 import io.jsonwebtoken.security.Keys;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import io.jsonwebtoken.Jwts;
@@ -19,6 +21,7 @@ public class JwtService {
     private  String secretKey;
     @Value("${jwt.expiration}")
     private Long jwtExpiration;
+    private final Set<String> blacklistedTokens = ConcurrentHashMap.newKeySet();
 
     public String extractUsername(String jwtToken) {
 
@@ -60,7 +63,13 @@ public class JwtService {
         final String username = extractUsername(jwtToken);
         return (userdetails.getUsername().equals(username) && !isTokenExpired(jwtToken));
     }
+    public void blacklistToken(String token) {
+        blacklistedTokens.add(token);
+    }
 
+    public boolean isBlacklisted(String token) {
+        return blacklistedTokens.contains(token);
+    }
 
     private boolean isTokenExpired(String jwtToken) {
         return extractExpiration(jwtToken).before(new Date());

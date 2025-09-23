@@ -1,4 +1,6 @@
 
+package com.epms.payroll.Common;
+
 import lombok.Builder;
 import lombok.Data;
 

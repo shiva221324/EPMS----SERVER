@@ -26,6 +26,11 @@ public class User implements UserDetails {
     private String email;
     private String password;
 
+    @OneToOne(mappedBy = "user")
+    private Employee employee;
+
+
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
             joinColumns = @JoinColumn(name = "user_id"),

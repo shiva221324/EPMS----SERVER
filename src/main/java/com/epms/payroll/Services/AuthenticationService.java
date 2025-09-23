@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
+@Service
 public class AuthenticationService {
 
 
@@ -41,5 +43,8 @@ public class AuthenticationService {
                 .username(user.getUsername())
                 .roles(user.getRoles())
                 .build();
+    }
+    public void logout(String token) {
+        jwtService.blacklistToken(token);
     }
 }

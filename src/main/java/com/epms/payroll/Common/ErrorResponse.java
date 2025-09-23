@@ -15,6 +15,6 @@ public class ErrorResponse {
     private String error;      // short error title
     private String message;    // developer-friendly or localized message
     private String path;       // request path
-    private String traceId;    // correlation id
+    private String traceId;
     private List<ApiSubError> subErrors; // list of detailed issues
 }
