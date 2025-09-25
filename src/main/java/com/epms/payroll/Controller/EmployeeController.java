@@ -2,6 +2,9 @@ package com.epms.payroll.Controller;
 
 import com.epms.payroll.Dto.EmployeeDto;
 import com.epms.payroll.Entities.*;
+import com.epms.payroll.Exception.codes.ErrorCode;
+import com.epms.payroll.Exception.custom.BusinessException;
+import com.epms.payroll.Exception.custom.ResourceNotFoundException;
 import com.epms.payroll.Repositories.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,32 +44,34 @@ public class EmployeeController {
 
     @PostMapping
     public ResponseEntity<EmployeeDto> createEmployee(@RequestBody EmployeeDto employeeDto) {
-        // 1️⃣ Map DTO to Employee entity
-        System.out.println("create employee");
+        // Check duplicate username/email before creating
+        if (employeeRepository.existsByEmail(employeeDto.getEmail())) {
+            throw new BusinessException(
+                    HttpStatus.CONFLICT,
+                    ErrorCode.CONFLICT,
+                    "Employee email already exists"
+            );
+        }
+
+        if (roleRepository.findByName("ROLE_EMPLOYEE").isEmpty()) {
+            throw new ResourceNotFoundException("ROLE_EMPLOYEE not found");
+        }
+
         Employee employee = mapToEntity(employeeDto);
 
-        // 2️⃣ Create User object for login
         User user = new User();
-        user.setUsername(employeeDto.getUsername()); // get from DTO
-        user.setEmail(employeeDto.getEmail());       // same as employee email
-        user.setPassword(passwordEncoder.encode(employeeDto.getPassword())); // encode password
-
-
+        user.setUsername(employeeDto.getUsername());
+        user.setEmail(employeeDto.getEmail());
+        user.setPassword(passwordEncoder.encode(employeeDto.getPassword()));
         Role employeeRole = roleRepository.findByName("ROLE_EMPLOYEE")
-                .orElseThrow(() -> new RuntimeException("ROLE_EMPLOYEE not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("ROLE_EMPLOYEE not found"));
         user.setRoles(Set.of(employeeRole));
 
-
-
-
         employee.setUser(user);
-
-        // 4️⃣ Save Employee (User will also be saved due to CascadeType.ALL)
         Employee savedEmployee = employeeRepository.save(employee);
-
-        // 5️⃣ Return DTO
         return new ResponseEntity<>(mapToDto(savedEmployee), HttpStatus.CREATED);
     }
+
 
 
     @GetMapping("/{id}")
@@ -117,27 +122,27 @@ public class EmployeeController {
                     // Update relationships
                     if (employeeDto.getDepartmentId() != null) {
                         Department department = departmentRepository.findById(employeeDto.getDepartmentId())
-                                .orElseThrow(() -> new RuntimeException("Department not found with id: " + employeeDto.getDepartmentId()));
+                                .orElseThrow(() -> new ResourceNotFoundException("Department not found with id: " + employeeDto.getDepartmentId()));
                         existingEmployee.setDepartment(department);
                     }
                     if (employeeDto.getDesignationId() != null) {
                         Designation designation = designationRepository.findById(employeeDto.getDesignationId())
-                                .orElseThrow(() -> new RuntimeException("Designation not found with id: " + employeeDto.getDesignationId()));
+                                .orElseThrow(() -> new ResourceNotFoundException("Designation not found with id: " + employeeDto.getDesignationId()));
                         existingEmployee.setDesignation(designation);
                     }
                     if (employeeDto.getBranchId() != null) {
                         Branch branch = branchRepository.findById(employeeDto.getBranchId())
-                                .orElseThrow(() -> new RuntimeException("Branch not found with id: " + employeeDto.getBranchId()));
+                                .orElseThrow(() -> new ResourceNotFoundException("Branch not found with id: " + employeeDto.getBranchId()));
                         existingEmployee.setBranch(branch);
                     }
                     if (employeeDto.getCreatedById() != null) {
                         Employee createdBy = employeeRepository.findById(employeeDto.getCreatedById())
-                                .orElseThrow(() -> new RuntimeException("CreatedBy Employee not found with id: " + employeeDto.getCreatedById()));
+                                .orElseThrow(() -> new ResourceNotFoundException("CreatedBy Employee not found with id: " + employeeDto.getCreatedById()));
                         existingEmployee.setCreatedBy(createdBy);
                     }
                     if (employeeDto.getUpdatedById() != null) {
                         Employee updatedBy = employeeRepository.findById(employeeDto.getUpdatedById())
-                                .orElseThrow(() -> new RuntimeException("UpdatedBy Employee not found with id: " + employeeDto.getUpdatedById()));
+                                .orElseThrow(() -> new ResourceNotFoundException("UpdatedBy Employee not found with id: " + employeeDto.getUpdatedById()));
                         existingEmployee.setUpdatedBy(updatedBy);
                     }
 
@@ -151,14 +156,15 @@ public class EmployeeController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
         if (!employeeRepository.existsById(id)) {
-            return ResponseEntity.notFound().build();
+            throw new ResourceNotFoundException("Employee not found with id: " + id);
         }
         employeeRepository.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
 
-    // --- Helper Methods for DTO/Entity Mapping ---
+
+
 
     private EmployeeDto mapToDto(Employee employee) {
         EmployeeDto dto = new EmployeeDto();

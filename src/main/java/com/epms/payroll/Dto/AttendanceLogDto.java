@@ -1,6 +1,7 @@
 package com.epms.payroll.Dto;
 
 import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -13,6 +14,10 @@ public class AttendanceLogDto {
     private LocalTime checkInTime;
     private LocalTime checkOutTime;
     private BigDecimal hoursWorked;
+    private BigDecimal overtimeHours;
     private String attendanceStatus;
+    private String shiftType;
+    private String workLocation;
+    private String remarks;
     private Long approvedById;
 }
