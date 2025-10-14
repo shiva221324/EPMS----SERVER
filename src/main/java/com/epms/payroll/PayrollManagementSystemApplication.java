@@ -19,12 +19,13 @@ public class PayrollManagementSystemApplication {
 
 		@Override
 		public void addCorsMappings(CorsRegistry registry) {
-			registry.addMapping("/**")  // Apply CORS to all endpoints
-					.allowedOrigins("http://localhost:4200")  // Allow requests from this origin
-					.allowedMethods("GET", "POST", "PUT", "DELETE")  // Allow these HTTP methods
-					.allowedHeaders("*")  // Allow all headers
-					.allowCredentials(true);  // Allow cookies or authentication credentials
+			registry.addMapping("/**")
+					.allowedOriginPatterns("http://localhost:5173") // <-- use allowedOriginPatterns
+					.allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+					.allowedHeaders("*")
+					.allowCredentials(true);
 		}
 	}
+
 
 }

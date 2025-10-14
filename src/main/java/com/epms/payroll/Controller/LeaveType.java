@@ -1,4 +1,4 @@
-package com.epms.payroll.Controller;
-
-public class LeaveType {
-}
+//package com.epms.payroll.Controller;
+//
+//public class LeaveType {
+//}

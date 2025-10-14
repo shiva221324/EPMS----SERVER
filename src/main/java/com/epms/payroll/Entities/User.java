@@ -1,5 +1,6 @@
 package com.epms.payroll.Entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,6 +28,7 @@ public class User implements UserDetails {
     private String password;
 
     @OneToOne(mappedBy = "user")
+    @JsonBackReference
     private Employee employee;
 
 

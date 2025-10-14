@@ -1,127 +1,148 @@
 package com.epms.payroll.Entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.vladmihalcea.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import lombok.ToString;
+import org.hibernate.annotations.Type;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@Table(name = "EMPLOYEE")
-
+@Table(name = "employees")
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Employee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "employee_id")
-    private Long employeeId;
+    private Long id;
 
-    @Column(name = "employee_code", unique = true, nullable = false)
-    private String employeeCode;
+    @NotBlank
+    @Column(nullable = false)
+    private String name;
 
-    @Column(name = "first_name", nullable = false)
-    private String firstName;
+    @NotBlank
+    @Column(unique = true, nullable = false)
+    private String employeeId;
 
-    @Column(name = "last_name")
-    private String lastName;
+    private String avatarUrl;
 
-    @Column(name = "middle_name")
-    private String middleName;
+    @Column(columnDefinition = "jsonb")
+    @Type(JsonType.class)
+    private Map<String, String> headerInfo;
 
-    @Column(name = "email", unique = true, nullable = false)
-    private String email;
+    @Column(columnDefinition = "jsonb")
+    @Type(JsonType.class)
+    private Map<String, String> personalDetails;
 
-    @Column(name = "phone")
-    private String phone;
+    @Column(columnDefinition = "jsonb")
+    @Type(JsonType.class)
+    private Map<String, String> contactDetails;
 
-    @Column(name = "date_of_birth")
-    private LocalDate dateOfBirth;
+    @Column(columnDefinition = "text")
+    private String professionalSummary;
 
-    @Column(name = "gender")
-    private String gender;
+    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    @ToString.Exclude
+    private List<WorkExperience> previousWorkExperience;
 
-    @Column(name = "marital_status")
-    private String maritalStatus;
+    @Column(columnDefinition = "jsonb")
+    @Type(JsonType.class)
+    private Map<String, String> emergencyContact;
 
-    @Column(name = "blood_group")
-    private String bloodGroup;
+    @Column(columnDefinition = "jsonb")
+    @Type(JsonType.class)
+    private Map<String, Object> visaDetails;
 
-    @Column(name = "pan_number", unique = true)
-    private String panNumber;
+    @Column(columnDefinition = "jsonb")
+    @Type(JsonType.class)
+    private Map<String, Object> groupHealthInsurance;
 
-    @Column(name = "aadhaar_number", unique = true)
-    private String aadhaarNumber;
+    @Column(columnDefinition = "jsonb")
+    @Type(JsonType.class)
+    private Map<String, Object> personalHealthInsurance;
 
+    @Column(columnDefinition = "jsonb")
+    @Type(JsonType.class)
+    private Map<String, Object> termInsurance;
 
-    @Column(name = "passport_number")
-    private String passportNumber;
+    @Column(columnDefinition = "jsonb")
+    @Type(JsonType.class)
+    private Map<String, Object> aadharInfo;
 
-    @Column(name = "driving_license")
-    private String drivingLicense;
+    @Column(columnDefinition = "jsonb")
+    @Type(JsonType.class)
+    private Map<String, Object> panInfo;
 
-    @Column(name = "address_permanent", columnDefinition = "TEXT")
-    private String addressPermanent;
+    @Column(columnDefinition = "jsonb")
+    @Type(JsonType.class)
+    private Map<String, Object> voterIdInfo;
 
-    @Column(name = "address_current", columnDefinition = "TEXT")
-    private String addressCurrent;
+    @Column(columnDefinition = "jsonb")
+    @Type(JsonType.class)
+    private Map<String, Object> passportInfo;
 
-    @Column(name = "emergency_contact_name")
-    private String emergencyContactName;
+    @Column(columnDefinition = "jsonb")
+    @Type(JsonType.class)
+    private Map<String, Object> bankInfo;
 
-    @Column(name = "emergency_contact_phone")
-    private String emergencyContactPhone;
+    @Column(columnDefinition = "jsonb")
+    @Type(JsonType.class)
+    private Map<String, Object> vehicleLicenseInfo;
 
-    @Column(name = "emergency_contact_relation")
-    private String emergencyContactRelation;
+    @Column(updatable = false)
+    private LocalDate createdAt = LocalDate.now();
 
-    @Column(name = "photo_path")
-    private String photoPath;
-
-    @Column(name = "status")
-    private String status;
-
-    // Relationships
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "department_id")
-    private Department department;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "designation_id")
-    private Designation designation;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "branch_id")
-    private Branch branch;
-
-    // Audit Fields
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private LocalDate updatedAt = LocalDate.now();
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "employee"})
+    @ToString.Exclude
     private User user;
 
+    public Employee() {}
 
-    // Assuming you have a User/Employee entity to link here
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by")
-    private Employee createdBy;
+    public Employee(String name, String employeeId) {
+        this.name = name;
+        this.employeeId = employeeId;
+    }
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "updated_by")
-    private Employee updatedBy;
+    @PreUpdate
+    public void preUpdate() {
+        updatedAt = LocalDate.now();
+    }
+
+    public void updateSection(String sectionName, Object sectionData) {
+        try {
+            switch (sectionName.toLowerCase()) {
+                case "personaldetails" -> setPersonalDetails((Map<String, String>) sectionData);
+                case "contactdetails" -> setContactDetails((Map<String, String>) sectionData);
+                case "emergencycontact" -> setEmergencyContact((Map<String, String>) sectionData);
+                case "professionalsummary" -> setProfessionalSummary((String) sectionData);
+                case "visadetails" -> setVisaDetails((Map<String, Object>) sectionData);
+                case "grouphealthinsurance" -> setGroupHealthInsurance((Map<String, Object>) sectionData);
+                case "personalhealthinsurance" -> setPersonalHealthInsurance((Map<String, Object>) sectionData);
+                case "terminsurance" -> setTermInsurance((Map<String, Object>) sectionData);
+                case "aadharinfo" -> setAadharInfo((Map<String, Object>) sectionData);
+                case "paninfo" -> setPanInfo((Map<String, Object>) sectionData);
+                case "voteridinfo" -> setVoterIdInfo((Map<String, Object>) sectionData);
+                case "passportinfo" -> setPassportInfo((Map<String, Object>) sectionData);
+                case "bankinfo" -> setBankInfo((Map<String, Object>) sectionData);
+                case "vehiclelicenseinfo" -> setVehicleLicenseInfo((Map<String, Object>) sectionData);
+                default -> throw new IllegalArgumentException("Unknown section: " + sectionName);
+            }
+        } catch (ClassCastException e) {
+            throw new IllegalArgumentException("Invalid data type for section: " + sectionName, e);
+        }
+    }
 }

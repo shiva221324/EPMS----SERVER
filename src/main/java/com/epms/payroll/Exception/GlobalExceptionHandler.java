@@ -1,4 +1,5 @@
 package com.epms.payroll.Exception;
+
 import com.project.hms.Exception.ApiSubError;
 import com.epms.payroll.Common.ErrorResponse;
 import com.epms.payroll.Exception.codes.ErrorCode;
@@ -7,7 +8,6 @@ import com.epms.payroll.Exception.custom.ResourceNotFoundException;
 import com.project.hms.Exception.util.ExceptionUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
-
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +30,7 @@ public class GlobalExceptionHandler {
                                              ErrorCode errorCode,
                                              String message,
                                              String path,
-                                             List<com.project.hms.Exception.ApiSubError> subErrors) {
+                                             List<ApiSubError> subErrors) {
         return new ErrorResponse(
                 LocalDateTime.now(),
                 status.value(),
@@ -57,8 +57,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<ErrorResponse> handleBussinessException(BusinessException ex,HttpServletRequest request)
-    {
+    public ResponseEntity<ErrorResponse> handleBusinessException(BusinessException ex, HttpServletRequest request) {
         ErrorResponse errorResponse = buildErrorResponse(
                 ex.getStatus(),
                 ex.getErrorCode(),
@@ -70,8 +69,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex,HttpServletRequest request)
-    {
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex, HttpServletRequest request) {
         List<ApiSubError> subErrors = ex.getBindingResult()
                 .getFieldErrors()
                 .stream()
@@ -126,30 +124,45 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex,
+                                                                HttpServletRequest request) {
+        ErrorResponse errorResponse = buildErrorResponse(
+                HttpStatus.BAD_REQUEST,
+                ErrorCode.BAD_REQUEST,
+                ex.getMessage(),
+                request.getRequestURI(),
+                null
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleAllExceptions(Exception ex,
                                                              HttpServletRequest request) {
         ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 ErrorCode.INTERNAL_ERROR,
-                "An unexpected error occurred",
+                ex.getMessage(), // Include detailed message for debugging
                 request.getRequestURI(),
                 null
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException ex,
                                                                       HttpServletRequest request) {
         ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.CONFLICT,
                 ErrorCode.CONFLICT,
-                "Database constraint violation",
+                "Database constraint violation: " + ex.getMessage(),
                 request.getRequestURI(),
                 null
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex,
                                                             HttpServletRequest request) {
@@ -162,6 +175,7 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
     }
+
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ErrorResponse> handleAuthentication(AuthenticationException ex,
                                                               HttpServletRequest request) {
@@ -174,6 +188,7 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
+
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException ex,
                                                                   HttpServletRequest request) {
@@ -186,9 +201,4 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(errorResponse);
     }
-
-
-
-
-
 }
