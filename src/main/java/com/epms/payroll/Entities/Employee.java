@@ -53,6 +53,7 @@ public class Employee {
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
     @ToString.Exclude
+
     private List<WorkExperience> previousWorkExperience;
 
     @Column(columnDefinition = "jsonb")

@@ -1,5 +1,6 @@
 package com.epms.payroll.Entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -16,7 +17,8 @@ public class WorkExperience {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "employee_id", nullable = false)
-    @JsonIgnore
+//    @JsonIgnore
+    @JsonBackReference
     private Employee employee;
 
     @NotBlank
